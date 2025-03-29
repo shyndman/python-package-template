@@ -1,0 +1,14 @@
+# questions
+project_name:
+    type: str
+    help: What is your project's name?
+
+module_name:
+    type: str
+    help: What is your Python module name?
+    default: "{%- include 'helpers/module-default.jinja' -%}"
+
+package_name:
+    type: str
+    help: What is your Python package name?
+    default: "{%- include 'helpers/package-name.jinja' -%}"

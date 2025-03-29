@@ -1,0 +1,20 @@
+[project]
+name = "{{module_name}}"
+version = "0.0.0"
+description = "…"
+readme = "README.md"
+authors = [{name = "{{user_name}}", email = "{{user_email}}"}]
+requires-python = ">={{python_version}}"
+dependencies = []
+license = {text = "MIT"}
+
+[project.urls]
+repository = "https://github.com/{{github_user}}/{{module_name}}"
+"Bug Tracker" = "https://github.com/{{github_user}}/{{module_name}}/issues"
+
+[project.scripts]
+{{module_name}} = "{{module_name}}:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
