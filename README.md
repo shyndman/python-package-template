@@ -9,8 +9,10 @@ A modern Python package template using [Copier](https://copier.readthedocs.io/en
 - UV integration for fast dependency management
 - Docker support with multi-stage builds
 - Clean project structure
-- Automatic module and package name generation
+- Automatic module and package name generation using Jinja templates
 - Automated project setup with Git, virtual environment, and development dependencies
+- Template configuration with `_subdirectory: template` and `_templates_suffix: .j2`
+- Exclusion of helper templates from the generated project
 
 ## Template Defaults
 
@@ -21,10 +23,10 @@ This template provides the following defaults:
 | `project_name` | Your project's name | (user input) |
 | `module_name` | Python module name | `project_name` converted to snake_case |
 | `package_name` | Python package name | `module_name` with underscores converted to hyphens |
-| `python_version` | Python version to use | (user input) |
-| `user_name` | Author name | (user input) |
-| `user_email` | Author email | (user input) |
-| `github_user` | GitHub username | (user input) |
+| `python_version` | Python version to use | 3.11 |
+| `user_name` | Author name | Scott Hyndman |
+| `user_email` | Author email | scotty.hyndman@gmail.com |
+| `github_user` | GitHub username | shyndman |
 
 ## Generated Project Structure
 
@@ -77,27 +79,17 @@ copier update
 
 ## Pyenv Integration
 
-This template integrates with [pyenv](https://github.com/pyenv/pyenv) for Python version management. When creating a project, you'll be prompted to select a Python version from those **dynamically detected** from your pyenv installation.
+This template integrates with [pyenv](https://github.com/pyenv/pyenv) for Python version management. When creating a project, you'll be prompted to select a Python version to use with pyenv.
 
 ### How it works
 
-The template uses the [copier-templates-extensions](https://github.com/copier-org/copier-templates-extensions) package with its `ContextHookExtension` to dynamically fetch Python versions from pyenv. The implementation:
+The template will:
 
-1. Uses a Python function (`get_python_versions`) that can be imported directly in the YAML template
-2. Checks if pyenv is installed on your system
-3. If it is, fetches the list of available Python versions using `pyenv versions --bare`
-4. Filters out system Python and non-CPython versions (like PyPy)
-5. Returns the list of Python versions as choices for the `python_version` variable
+1. Install the selected Python version using pyenv if it's not already installed
+2. Create a `.python-version` file with your selected Python version
+3. Set the local Python version for the project using `pyenv local`
 
-This approach follows the recommended pattern from the [copier-templates-extensions documentation](https://github.com/copier-org/copier-templates-extensions#context-hook-extension).
-
-The template will then:
-
-1. Create a `.python-version` file with your selected Python version
-2. Set the local Python version for the project using `pyenv local`
-3. Use the selected Python version when creating the virtual environment
-
-If pyenv is not installed, the template will fall back to a standard list of Python versions (3.8, 3.9, 3.10, 3.11, 3.12) and you'll receive instructions on how to install pyenv and set up your project with the correct Python version.
+The default Python version is set to 3.11, but you can choose any version supported by pyenv during project creation.
 
 ### Common Pyenv Commands
 
@@ -111,14 +103,12 @@ If pyenv is not installed, the template will fall back to a standard list of Pyt
 
 ## UV Integration
 
-This template uses [UV](https://github.com/astral-sh/uv), a fast Python package installer and resolver written in Rust. When you create a project with this template, the following UV-related tasks are automatically performed (if UV is installed):
+This template uses [UV](https://github.com/astral-sh/uv), a fast Python package installer and resolver written in Rust. When you create a project with this template, the following UV-related tasks are automatically performed:
 
-1. A virtual environment is created with `uv venv --python <selected_version>`
-2. The package is installed in development mode with `uv pip install -e .`
-3. A lockfile is created with `uv lock`
-4. Development dependencies are installed with `uv add --dev`
+1. UV is installed if not already present on your system
+2. Dependencies are synchronized with `uv sync --all-extras --all-groups --no-binary`
 
-If UV is not installed, you'll receive instructions on how to install it and set up your project manually.
+This ensures that all dependencies are properly installed and managed using UV's fast resolver.
 
 ### Common UV Commands
 
@@ -131,6 +121,46 @@ If UV is not installed, you'll receive instructions on how to install it and set
 | `uv add --dev <package>` | Add a package to development dependencies |
 | `uv run <script>` | Run a script in the virtual environment |
 | `uv sync` | Sync the environment with the lockfile |
+
+## Jinja Templates in This Project
+
+This template uses Jinja2 for templating. Here's how Jinja includes are used in this project:
+
+### Module Name Default
+
+The default value for `module_name` is generated using a Jinja include:
+
+```yaml
+module_name:
+    type: str
+    help: What is your Python module name?
+    default: "{%- include 'template/helpers/module-default.j2' -%}"
+```
+
+The included template (`module-default.j2`) converts the project name to snake_case:
+
+```jinja
+{#- For simplicity ... -#}
+{{ project_name|lower|replace(' ', '_') }}
+```
+
+### Package Name Default
+
+Similarly, the default value for `package_name` is generated using a Jinja include:
+
+```yaml
+package_name:
+    type: str
+    help: What is your Python package name?
+    default: "{%- include 'template/helpers/package-name.j2' -%}"
+```
+
+The included template (`package-name.j2`) converts the module name to kebab-case:
+
+```jinja
+{#- For simplicity ... -#}
+{{ module_name|lower|replace('_', '-') }}
+```
 
 ### Useful Links
 
