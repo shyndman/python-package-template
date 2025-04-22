@@ -4,11 +4,34 @@ _templates_suffix: .j2
 
 # Exclude patterns (files and folders that won't be copied)
 _exclude:
-    - "template/helpers"
-    - "template/helpers/*.j2"
-    - "helpers"
-    - "helpers/*.j2"
-    - "!template"
+    - 'template/helpers'
+    - 'template/helpers/*.j2'
+    - 'helpers'
+    - 'helpers/*.j2'
+    - '!template'
+
+# Post-generation tasks
+_tasks:
+    # Check if pyenv is installed
+    - pyenv install --skip-existing {{ python_version }};
+
+    # Set Python version with pyenv if available
+    - echo {{ python_version }} > .python-version && pyenv local {{ python_version }};
+
+    # Check if uv is installed
+    - 'if ! command -v uv >/dev/null 2>&1; then curl -LsSf https://astral.sh/uv/install.sh | sh; fi'
+
+    # Initialize git repository
+    - 'cd {{ _copier_conf.dst_path }} && git init'
+
+    # Allow the envrc if direnv is available
+    - 'cd {{ _copier_conf.dst_path }} && if command -v direnv >/dev/null 2>&1; then direnv allow; fi'
+
+    # Create a lockfile (only if uv is installed)
+    - cd {{ _copier_conf.dst_path }} && uv sync --all-extras --all-groups --no-binary
+
+    # Initialize pre-commit if available
+    - 'cd {{ _copier_conf.dst_path }} && if command -v pre-commit >/dev/null 2>&1; then pre-commit install; fi'
 
 # questions
 project_name:
@@ -24,3 +47,21 @@ package_name:
     type: str
     help: What is your Python package name?
     default: "{%- include 'template/helpers/package-name.j2' -%}"
+
+python_version:
+    type: str
+    help: Select Python version to use with pyenv
+    default: '3.11'
+
+user_name:
+    type: str
+    default: "Scott Hyndman"
+
+user_email:
+    type: str
+    default: "scotty.hyndman@gmail.com"
+
+github_user:
+    type: str
+    default: "shyndman"
+
