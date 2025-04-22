@@ -1,3 +1,10 @@
+# Template configuration
+_subdirectory: .template
+
+# Exclude patterns (files and folders that won't be copied)
+_exclude:
+    - "helpers/**"
+
 # questions
 project_name:
     type: str
