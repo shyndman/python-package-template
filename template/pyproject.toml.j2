@@ -18,3 +18,31 @@ repository = "https://github.com/{{github_user}}/{{module_name}}"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8.3.5"]
+
+[tool.pyright]
+include = ["src"]
+ignore = ["**/.venv"]
+defineConstant = {DEBUG = true}
+reportMissingImports = "error"
+deprecateTypingAliases = true
+reportDeprecated = "information"
+pythonPlatform = "Linux"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{module_name}}"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

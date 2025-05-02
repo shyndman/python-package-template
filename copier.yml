@@ -12,26 +12,29 @@ _exclude:
 
 # Post-generation tasks
 _tasks:
+    - env
     # Check if pyenv is installed
-    - pyenv install --skip-existing {{ python_version }};
+    - pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)";
+
+    - cd {{ _copier_conf.dst_path }} && python --version
 
     # Set Python version with pyenv if available
-    - echo {{ python_version }} > .python-version && pyenv local {{ python_version }};
+    - cd {{ _copier_conf.dst_path }} && echo {{ python_version }} > .python-version && pyenv local {{ python_version }};
 
     # Check if uv is installed
-    - 'if ! command -v uv >/dev/null 2>&1; then curl -LsSf https://astral.sh/uv/install.sh | sh; fi'
+    - 'cd {{ _copier_conf.dst_path }} && pip install uv'
 
     # Initialize git repository
     - 'cd {{ _copier_conf.dst_path }} && git init'
-
-    # Allow the envrc if direnv is available
-    - 'cd {{ _copier_conf.dst_path }} && if command -v direnv >/dev/null 2>&1; then direnv allow; fi'
 
     # Create a lockfile (only if uv is installed)
     - cd {{ _copier_conf.dst_path }} && uv sync --all-extras --all-groups --no-binary
 
     # Initialize pre-commit if available
     - 'cd {{ _copier_conf.dst_path }} && if command -v pre-commit >/dev/null 2>&1; then pre-commit install; fi'
+
+    # Allow the envrc if direnv is available
+    - 'cd {{ _copier_conf.dst_path }} && if command -v direnv >/dev/null 2>&1; then direnv allow; fi'
 
 # questions
 project_name:
@@ -64,4 +67,3 @@ user_email:
 github_user:
     type: str
     default: "shyndman"
-
