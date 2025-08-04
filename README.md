@@ -8,11 +8,15 @@ A modern Python package template using [Copier](https://copier.readthedocs.io/en
 - Pyenv integration for Python version management
 - UV integration for fast dependency management
 - Docker support with multi-stage builds
-- Clean project structure
+- Optional GitHub Actions workflows:
+  - CI workflow with Ruff, Pyright, and pytest (with GitHub annotations)
+  - Docker build and publish to ghcr.io
+- Clean project structure with basic test suite
+- Ruff and Pyright configuration for code quality
+- Pre-commit hooks integration
+- Claude Code integration for seamless development
 - Automatic module and package name generation using Jinja templates
 - Automated project setup with Git, virtual environment, and development dependencies
-- Template configuration with `_subdirectory: template` and `_templates_suffix: .j2`
-- Exclusion of helper templates from the generated project
 
 ## Template Defaults
 
@@ -27,17 +31,30 @@ This template provides the following defaults:
 | `user_name` | Author name | Scott Hyndman |
 | `user_email` | Author email | scotty.hyndman@gmail.com |
 | `github_user` | GitHub username | shyndman |
+| `include_ci_workflow` | Include CI workflow with Ruff, Pyright, and pytest | true |
+| `include_docker_workflow` | Include Docker build and publish workflow | false |
+| `launch_claude_code` | Launch Claude Code after project generation | true |
+| `claude_design_session` | Have Claude help design project README and description | true |
 
 ## Generated Project Structure
 
 ```
 your-package-name/
-├── Dockerfile
-├── pyproject.toml
-├── README.md
-└── src/
-    └── your_module_name/
-        └── __init__.py
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Optional: CI with Ruff, Pyright, pytest
+│       └── docker.yml          # Optional: Docker build & publish
+├── src/
+│   └── your_module_name/
+│       └── __init__.py
+├── tests/
+│   └── test_basic.py           # Basic import and version tests
+├── .gitignore
+├── .pre-commit-config.yaml
+├── .python-version
+├── Dockerfile                  # Multi-stage UV-based build
+├── pyproject.toml              # Modern Python packaging
+└── README.md
 ```
 
 ## Copier Cheatsheet
@@ -88,6 +105,10 @@ The template will:
 1. Install the selected Python version using pyenv if it's not already installed
 2. Create a `.python-version` file with your selected Python version
 3. Set the local Python version for the project using `pyenv local`
+4. Initialize a git repository
+5. Install UV and sync dependencies
+6. Set up pre-commit hooks (if available)
+7. Launch Claude Code with optional design session to help create README and package description
 
 The default Python version is set to 3.11, but you can choose any version supported by pyenv during project creation.
 
