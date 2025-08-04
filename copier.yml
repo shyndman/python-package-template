@@ -14,28 +14,23 @@ _exclude:
 # Post-generation tasks
 _tasks:
     - env
-    # Allow the envrc if direnv is available (before any cd commands)
-    - 'if command -v direnv >/dev/null 2>&1; then direnv allow {{ _copier_conf.dst_path }}/.envrc; fi'
+    # Require direnv for proper environment setup
+    - 'command -v direnv >/dev/null 2>&1 || { echo "Error: direnv is required but not installed. Please install direnv first."; exit 1; }'
 
-    # Check if pyenv is installed and set up Python version
-    - 'if command -v pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)"; else echo "pyenv not found, skipping Python version setup"; fi'
+    # Allow the envrc before any direnv exec commands
+    - 'direnv allow {{ _copier_conf.dst_path }}/.envrc'
 
-    - cd {{ _copier_conf.dst_path }} && python --version && pip install uv
-
-    # Set Python version with pyenv if available
-    - 'cd {{ _copier_conf.dst_path }} && if command -v pyenv >/dev/null 2>&1; then echo {{ python_version }} > .python-version && pyenv local {{ python_version }}; else echo "pyenv not found, skipping .python-version setup"; fi'
-
-    # Install uv if not already available
-    - 'cd {{ _copier_conf.dst_path }} && if ! command -v uv >/dev/null 2>&1; then pip install uv; else echo "uv already installed"; fi'
+    # Install Python version with pyenv if available
+    - 'if command -v pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }}; else echo "pyenv not found, skipping Python version setup"; fi'
 
     # Initialize git repository
     - 'cd {{ _copier_conf.dst_path }} && git init'
 
-    # Create a lockfile and sync dependencies if uv is available
-    - 'cd {{ _copier_conf.dst_path }} && if command -v uv >/dev/null 2>&1; then uv sync --all-extras --all-groups --no-binary; else echo "uv not available, skipping dependency sync"; fi'
+    # Install uv and sync dependencies using direnv exec for proper environment
+    - 'direnv exec {{ _copier_conf.dst_path }} sh -c "python --version && pip install uv && uv sync --all-extras --all-groups --no-binary"'
 
     # Initialize pre-commit if available
-    - 'cd {{ _copier_conf.dst_path }} && if command -v pre-commit >/dev/null 2>&1; then pre-commit install; fi'
+    - 'direnv exec {{ _copier_conf.dst_path }} sh -c "uv tool run pre-commit install"'
 
     # Launch Claude Code with design session if requested
     - command: 'if command -v claude >/dev/null 2>&1; then claude --prompt "I just generated a new Python project called {{project_name}} using a template. The module name is {{module_name}} and it currently has placeholder content. Please interview me to understand what this project should do, then help me write a proper README.md and update the package description in pyproject.toml. Ask me about the project purpose, target audience, key features, and any specific requirements." .; else echo "Claude Code not found, skipping design session"; fi'
