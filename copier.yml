@@ -14,22 +14,22 @@ _exclude:
 # Post-generation tasks
 _tasks:
     - env
-    # Check if pyenv is installed
-    - pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)";
+    # Check if pyenv is installed and set up Python version
+    - 'if command -v pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)"; else echo "pyenv not found, skipping Python version setup"; fi'
 
     - cd {{ _copier_conf.dst_path }} && python --version
 
     # Set Python version with pyenv if available
-    - cd {{ _copier_conf.dst_path }} && echo {{ python_version }} > .python-version && pyenv local {{ python_version }};
+    - 'cd {{ _copier_conf.dst_path }} && if command -v pyenv >/dev/null 2>&1; then echo {{ python_version }} > .python-version && pyenv local {{ python_version }}; else echo "pyenv not found, skipping .python-version setup"; fi'
 
-    # Check if uv is installed
-    - 'cd {{ _copier_conf.dst_path }} && pip install uv'
+    # Install uv if not already available
+    - 'cd {{ _copier_conf.dst_path }} && if ! command -v uv >/dev/null 2>&1; then pip install uv; else echo "uv already installed"; fi'
 
     # Initialize git repository
     - 'cd {{ _copier_conf.dst_path }} && git init'
 
-    # Create a lockfile (only if uv is installed)
-    - cd {{ _copier_conf.dst_path }} && uv sync --all-extras --all-groups --no-binary
+    # Create a lockfile and sync dependencies if uv is available
+    - 'cd {{ _copier_conf.dst_path }} && if command -v uv >/dev/null 2>&1; then uv sync --all-extras --all-groups --no-binary; else echo "uv not available, skipping dependency sync"; fi'
 
     # Initialize pre-commit if available
     - 'cd {{ _copier_conf.dst_path }} && if command -v pre-commit >/dev/null 2>&1; then pre-commit install; fi'
