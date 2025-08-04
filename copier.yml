@@ -68,3 +68,14 @@ user_email:
 github_user:
     type: str
     default: "shyndman"
+
+include_ci_workflow:
+    type: bool
+    default: true
+    help: Include CI workflow with Ruff, Pyright, and pytest?
+
+include_docker_workflow:
+    type: bool
+    default: false
+    help: Include Docker build and publish workflow?
+
