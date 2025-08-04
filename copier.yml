@@ -18,9 +18,9 @@ _tasks:
     - 'if command -v direnv >/dev/null 2>&1; then direnv allow {{ _copier_conf.dst_path }}/.envrc; fi'
 
     # Check if pyenv is installed and set up Python version
-    - 'if command -v pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)" && pip install uv; else echo "pyenv not found, skipping Python version setup"; fi'
+    - 'if command -v pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }} && eval "$(pyenv init - sh)"; else echo "pyenv not found, skipping Python version setup"; fi'
 
-    - cd {{ _copier_conf.dst_path }} && python --version
+    - cd {{ _copier_conf.dst_path }} && python --version && pip install uv
 
     # Set Python version with pyenv if available
     - 'cd {{ _copier_conf.dst_path }} && if command -v pyenv >/dev/null 2>&1; then echo {{ python_version }} > .python-version && pyenv local {{ python_version }}; else echo "pyenv not found, skipping .python-version setup"; fi'
