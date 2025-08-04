@@ -37,6 +37,11 @@ _tasks:
     # Allow the envrc if direnv is available
     - 'cd {{ _copier_conf.dst_path }} && if command -v direnv >/dev/null 2>&1; then direnv allow; fi'
 
+    # Launch Claude Code if requested
+    - command: 'if command -v claude >/dev/null 2>&1; then claude .; else echo "Claude Code not found, skipping auto-launch"; fi'
+      working_directory: '{{ _copier_conf.dst_path }}'
+      when: '{{ launch_claude_code }}'
+
 # questions
 project_name:
     type: str
@@ -79,3 +84,7 @@ include_docker_workflow:
     default: false
     help: Include Docker build and publish workflow?
 
+launch_claude_code:
+    type: bool
+    default: true
+    help: Launch Claude Code after project generation?
