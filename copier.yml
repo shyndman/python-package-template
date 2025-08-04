@@ -9,6 +9,7 @@ _exclude:
     - 'helpers'
     - 'helpers/*.j2'
     - '!template'
+    - 'CLAUDE.md'
 
 # Post-generation tasks
 _tasks:
