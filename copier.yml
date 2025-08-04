@@ -15,13 +15,13 @@ _exclude:
 _tasks:
     - env
     # Require direnv for proper environment setup
-    - 'whence -w direnv >/dev/null 2>&1 || { echo "Error: direnv is required but not installed. Please install direnv first."; exit 1; }'
+    - 'type direnv >/dev/null 2>&1 || { echo "Error: direnv is required but not installed. Please install direnv first."; exit 1; }'
 
     # Allow the envrc before any direnv exec commands
     - 'direnv allow {{ _copier_conf.dst_path }}/.envrc'
 
     # Install Python version with pyenv if available
-    - 'if whence -w pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }}; else echo "pyenv not found, skipping Python version setup"; fi'
+    - 'if type pyenv >/dev/null 2>&1; then pyenv install --skip-existing {{ python_version }}; else echo "pyenv not found, skipping Python version setup"; fi'
 
     # Initialize git repository
     - 'cd {{ _copier_conf.dst_path }} && git init'
@@ -33,12 +33,12 @@ _tasks:
     - 'direnv exec {{ _copier_conf.dst_path }} sh -c "uv tool run pre-commit install"'
 
     # Launch Claude Code with design session if requested
-    - command: 'if whence -w claude >/dev/null 2>&1; then claude --prompt "I just generated a new Python project called {{project_name}} using a template. The module name is {{module_name}} and it currently has placeholder content. Please interview me to understand what this project should do, then help me write a proper README.md and update the package description in pyproject.toml. Ask me about the project purpose, target audience, key features, and any specific requirements." .; else echo "Claude Code not found, skipping design session"; fi'
+    - command: 'if type claude >/dev/null 2>&1; then claude --prompt "I just generated a new Python project called {{project_name}} using a template. The module name is {{module_name}} and it currently has placeholder content. Please interview me to understand what this project should do, then help me write a proper README.md and update the package description in pyproject.toml. Ask me about the project purpose, target audience, key features, and any specific requirements." .; else echo "Claude Code not found, skipping design session"; fi'
       working_directory: '{{ _copier_conf.dst_path }}'
       when: '{{ claude_design_session and launch_claude_code }}'
 
     # Launch Claude Code without design session if requested
-    - command: 'if whence -w claude >/dev/null 2>&1; then claude .; else echo "Claude Code not found, skipping auto-launch"; fi'
+    - command: 'if type claude >/dev/null 2>&1; then claude .; else echo "Claude Code not found, skipping auto-launch"; fi'
       working_directory: '{{ _copier_conf.dst_path }}'
       when: '{{ launch_claude_code and not claude_design_session }}'
 
