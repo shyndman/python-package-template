@@ -33,12 +33,12 @@ _tasks:
     - 'direnv exec {{ _copier_conf.dst_path }} sh -c "uv tool run pre-commit install"'
 
     # Launch Claude Code with design session if requested
-    - command: 'if type claude >/dev/null 2>&1; then claude --prompt "I just generated a new Python project called {{project_name}} using a template. The module name is {{module_name}} and it currently has placeholder content. Please interview me to understand what this project should do, then help me write a proper README.md and update the package description in pyproject.toml. Ask me about the project purpose, target audience, key features, and any specific requirements." .; else echo "Claude Code not found, skipping design session"; fi'
+    - command: 'zsh -i -c "echo \"Checking for Claude...\" && if type claude >/dev/null 2>&1; then echo \"Claude found, launching with design session...\" && claude --append-system-prompt \"You are a project design assistant. Your job is to immediately start asking probing questions to understand what this Python project should do. Do not wait for the user to ask - start questioning them right away about the project purpose, functionality, and requirements. Be direct and inquisitive.\" . \"I just generated a new Python project called {{project_name}} using a template. The module name is {{module_name}} and it currently has placeholder content. Start interviewing me NOW to understand what this project should do, then help me write a proper README.md and update the package description in pyproject.toml. What is the main purpose of this project?\"; else echo \"Claude Code not found, skipping design session\"; fi"'
       working_directory: '{{ _copier_conf.dst_path }}'
       when: '{{ claude_design_session and launch_claude_code }}'
 
     # Launch Claude Code without design session if requested
-    - command: 'if type claude >/dev/null 2>&1; then claude .; else echo "Claude Code not found, skipping auto-launch"; fi'
+    - command: 'zsh -i -c "echo \"Checking for Claude...\" && if type claude >/dev/null 2>&1; then echo \"Claude found, launching...\" && claude .; else echo \"Claude Code not found, skipping auto-launch\"; fi"'
       working_directory: '{{ _copier_conf.dst_path }}'
       when: '{{ launch_claude_code and not claude_design_session }}'
 
